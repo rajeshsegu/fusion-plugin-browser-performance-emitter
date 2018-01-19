@@ -2871,6 +2871,10 @@ jsx-ast-utils@^2.0.0:
   dependencies:
     array-includes "^3.0.3"
 
+just-pick@^1.0.3:
+  version "1.0.3"
+  resolved "https://unpm.uberinternal.com/just-pick/-/just-pick-1.0.3.tgz#a22dc217482a2c1df46555c68581a1273e30e57f"
+
 keygrip@~1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/keygrip/-/keygrip-1.0.2.tgz#ad3297c557069dea8bcfe7a4fa491b75c5ddeb91"

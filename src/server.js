@@ -20,8 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+const pick = require('just-pick');
+
 /* eslint-env node */
-export default ({EventEmitter}) => {
+export default ({EventEmitter, appId}) => {
   if (__DEV__ && !EventEmitter)
     throw new Error(`EventEmitter is required, but was: ${EventEmitter}`);
 
@@ -32,21 +34,90 @@ export default ({EventEmitter}) => {
 
   /* Helper Functions */
   function mapPerfEvent(event) {
-    const {timing, resourceEntries, firstPaint, tags} = event;
+    const {navigation, resources, network, memory, firstPaint, tags} = event;
 
-    const calculatedStats = getCalculatedStats(
-      timing,
-      resourceEntries,
-      firstPaint
-    );
+    const data = {
+      ...event.payload,
+      ...transformData(navigation, resources, network, memory, firstPaint, tags, appId),
+    };
+
+    return data;
+  }
+
+  function transformData(navigationRaw, resourcesRaw, rawNetwork, memory, firstPaint, tags, appId) {
+    // const [url, qs] = tags.url ? tags.url.split('?') : [];
+    const navigationMeta = {
+    //   url,
+    //   qs
+    };
+
+
+
+    const app = {
+      name: appId,
+      external: true,
+    }
+
+    const navigation = pick(navigationRaw, [
+      'navigationStart',
+      'redirectStart',
+      'redirectEnd',
+      'fetchStart',
+      'requestStart',
+      'responseStart',
+      'responseEnd',
+      'domLoading',
+      'domInteractive',
+      'domContentLoadedEventEnd',
+      'domComplete',
+    ]);
+
+    const resources = resourcesRaw.map(resourceRaw => {
+      const resource = pick(resourceRaw, [
+        'name',
+        'fetchStart',
+        'redirectStart',
+        'redirectEnd',
+        'requestStart',
+        'responseStart',
+        'responseEnd',
+        'transferSize',
+      ]);
+
+      resource.initiator = resourceRaw.initiatorType;
+      resource.responseSize = resourceRaw.decodedBodySize;
+      const {domComplete, fetchStart, responseSize, transferSize} = resource;
+      resource.duration = domComplete - fetchStart;
+      // find a better way to do this...
+      resource.fromCache = responseSize / transferSize > 2;
+      return resource;
+    })
+
+    const network = {
+      // region,
+      // country,
+      ...rawNetwork,
+    }
+
+    const client = {
+      // locale,
+      // device,
+      // browser,
+      memory,
+      // serviceWorker,
+    }
+
+    const server = {
+    }
 
     return {
-      ...event.payload,
-      calculatedStats,
-      timingValues: timing,
-      resourceEntries,
-      tags,
-    };
+      navigationMeta,
+      network,
+      app,
+      timings: {navigation, resources},
+      client,
+      server,
+    }
   }
 
   function getCalculatedStats(timing, resourceEntries, firstPaint) {

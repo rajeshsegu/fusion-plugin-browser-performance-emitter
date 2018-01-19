@@ -40,7 +40,7 @@ export default ({EventEmitter}) => {
         this.tags = {route: window.location.href};
       }
 
-      calculate(timing, resourceEntries) {
+      calculate(timing, resourceEntries, network, memory) {
         if (
           (!window.performance ||
             !window.performance.timing ||
@@ -56,12 +56,16 @@ export default ({EventEmitter}) => {
           window.performance.getEntriesByType('resource').filter(entry => {
             return entry.name.indexOf('data:') !== 0 && entry.toJSON;
           });
+        network = network || window.navigator.connection || null;
+        memory = memory || window.performance.memory || null;
 
         const firstPaint = getFirstPaint();
 
         return {
-          timing,
-          resourceEntries: resourceEntries.map(entry => entry.toJSON()),
+          navigation: timing,
+          resources: resourceEntries.map(entry => entry.toJSON()),
+          network,
+          memory,
           firstPaint,
         };
       }
@@ -74,11 +78,13 @@ export default ({EventEmitter}) => {
         window.setTimeout(() => {
           // for testing purposes pass timing and resourceEntries from options
           const {
-            timing,
-            resourceEntries,
+            navigation,
+            resources,
+            network,
+            memory,
             firstPaint,
           } = browserPerformanceEmitter.calculate();
-          emit({timing, resourceEntries, firstPaint, tags: this.of(ctx).tags});
+          emit({navigation, resources, network, memory, firstPaint, tags: this.of(ctx).tags});
         }, 0);
       });
 
