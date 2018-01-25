@@ -50,7 +50,7 @@ export default ({EventEmitter}) => {
           return;
         }
 
-        timing = timing || window.performance.timing;
+        timing = timing || window.performance.getEntriesByType('navigation');
         resourceEntries =
           resourceEntries ||
           window.performance.getEntriesByType('resource').filter(entry => {
@@ -84,7 +84,14 @@ export default ({EventEmitter}) => {
             memory,
             firstPaint,
           } = browserPerformanceEmitter.calculate();
-          emit({navigation, resources, network, memory, firstPaint, tags: this.of(ctx).tags});
+          emit({
+            navigation,
+            resources,
+            network,
+            memory,
+            firstPaint,
+            tags: this.of(ctx).tags,
+          });
         }, 0);
       });
 
