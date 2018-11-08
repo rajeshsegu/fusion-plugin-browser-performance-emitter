@@ -7,6 +7,7 @@
  */
 
 import {getTimeFromMarks} from '../utils';
+import packageJson from './package.json';
 
 function hasPerf(window) {
   return Boolean(
@@ -125,6 +126,8 @@ const browserPerfCollector: (window: any) => Object = (window: any) => {
     return {};
   }
 
+  const {name, version} = packageJson;
+
   return {
     navigation: getTiming(window),
     resources: getEntries(window),
@@ -135,6 +138,7 @@ const browserPerfCollector: (window: any) => Object = (window: any) => {
     navigationMeta: getNavigationMeta(window),
     network: getNetwork(window),
     dimensions: getDeviceDimensions(window),
+    currentLogger: {name, version},
   };
 };
 
