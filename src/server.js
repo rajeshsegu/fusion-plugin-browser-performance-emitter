@@ -26,7 +26,15 @@ const plugin: FusionPlugin<BrowserPerfDepsType, void> =
 
       /* Helper Functions */
       function mapPerfEvent(event) {
-        const {timing, resourceEntries, paintTimes} = event;
+        const {timing, resourceEntries, paintTimes, enhancedMetrics} = event;
+
+        if (enhancedMetrics && enhancedMetrics.app) {
+          const {name, version} = require('../package.json');
+          if (!enhancedMetrics.app) {
+            enhancedMetrics.app = {};
+          }
+          enhancedMetrics.app.logger = {name, version};
+        }
 
         const calculatedStats = getCalculatedStats(
           timing,
@@ -38,6 +46,7 @@ const plugin: FusionPlugin<BrowserPerfDepsType, void> =
           ...event,
           calculatedStats,
           timingValues: timing,
+          enhancedMetrics,
         };
       }
 
